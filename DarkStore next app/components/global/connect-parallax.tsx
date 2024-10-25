@@ -105,11 +105,10 @@ export const Header = () => {
   return (
     <div className="max-w-7xl relative mx-auto py-20 md:py-0 px-4 w-full  left-0 top-0">
       <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
-      Enhance <br /> Guest Experience
+      Optimize <br /> Warehouse Potential
       </h1>
       <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
-      Our platform streamlines communication, allowing hospitality businesses to connect effectively with guests through WhatsApp for a seamless experience
-      </p>
+      Our platform helps you transform your warehouse into a high-demand dark store, connecting you with top delivery services and optimizing your space for maximum profitability.      </p>
     </div>
   )
 }

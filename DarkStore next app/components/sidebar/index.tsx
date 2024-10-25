@@ -29,7 +29,7 @@ const MenuOptions = (props: Props) => {
           className="flex font-bold flex-row "
           href="/"
         >
-          Guestly
+          DarkStore
         </Link>
         <TooltipProvider>
           {menuOptions.map((menuItem) => (
@@ -64,7 +64,7 @@ const MenuOptions = (props: Props) => {
           ))}
         </TooltipProvider>
         <Separator />
-        <div className="flex items-center flex-col gap-9 dark:bg-[#353346]/30 py-4 px-2 rounded-full h-56 overflow-scroll border-[1px]">
+        {/* <div className="flex items-center flex-col gap-9 dark:bg-[#353346]/30 py-4 px-2 rounded-full h-56 overflow-scroll border-[1px]">
           <div className="relative dark:bg-[#353346]/70 p-2 rounded-full dark:border-t-[2px] border-[1px] dark:border-t-[#353346]">
             <LucideMousePointerClick
               className="dark:text-white"
@@ -93,7 +93,7 @@ const MenuOptions = (props: Props) => {
             />
           </div>
           
-        </div>
+        </div> */}
         
       </div>
       <div className="flex items-center justify-center flex-col gap-8">
