@@ -13,17 +13,37 @@ if __name__ == '__main__':
     freeze_support()
     
     # Load the data
-    df = pd.read_csv('../data/raw/generated_seasonal_data.csv')
+    df = pd.read_csv('../data/biryani/generated_seasonal_data.csv')
     df['ds'] = pd.to_datetime(df['ds'])
 
     # Read the demand_region_wise data to get the list of regions
-    demand_region_wise = pd.read_csv('../data/raw/demand_region_wise.csv')
+    demand_region_wise = pd.read_csv('../data/biryani/demand_region_wise.csv')
     regions = demand_region_wise['Location'].unique()
 
     # Create one-hot encoded columns for regions if not already present
     for region in regions:
         if f'region_{region}' not in df.columns:
             df[f'region_{region}'] = np.random.choice([0, 1], size=len(df), p=[0.8, 0.2])
+
+    # Create a festival dataset
+    festivals = pd.DataFrame({
+        'holiday': ['Diwali', 'Holi', 'Christmas', 'Eid'],
+        'ds': pd.to_datetime(['2023-11-12', '2023-03-08', '2023-12-25', '2023-04-22'])
+    })
+
+    # Add future dates for these festivals
+    future_festivals = pd.DataFrame({
+        'holiday': ['Diwali', 'Holi', 'Christmas', 'Eid'],
+        'ds': pd.to_datetime(['2024-10-31', '2024-03-25', '2024-12-25', '2024-04-10'])
+    })
+
+    festivals = pd.concat([festivals, future_festivals])
+
+    # Add festival information to the dataframe
+    for _, row in festivals.iterrows():
+        festival_name = row['holiday']
+        festival_date = row['ds']
+        df[festival_name] = (df['ds'] == festival_date).astype(int)
 
     # Split the data into training and testing sets (80-20 split)
     train_size = int(len(df) * 0.8)
@@ -39,7 +59,7 @@ if __name__ == '__main__':
     print(f"Training data size: {len(train_df)} days")
     print(f"Testing data size: {len(test_df)} days")
 
-    # Initialize and fit the Prophet model with tuned parameters
+    # Initialize and fit the Prophet model with tuned parameters and festivals
     model = Prophet(
         yearly_seasonality=True,
         weekly_seasonality=True,
@@ -53,8 +73,9 @@ if __name__ == '__main__':
     for region in regions:
         model.add_regressor(f'region_{region}')
 
-    # Add any additional regressors here if available
-    # model.add_regressor('additional_feature')
+    # Add festival regressors
+    for festival in festivals['holiday'].unique():
+        model.add_regressor(festival)
 
     # Fit the model
     model.fit(train_df)
@@ -88,12 +109,24 @@ if __name__ == '__main__':
     model = Prophet(**best_params)
     for region in regions:
         model.add_regressor(f'region_{region}')
+    for festival in festivals['holiday'].unique():
+        model.add_regressor(festival)
     model.fit(train_df)
 
-    # Make predictions on the test set
+    # Create future dataframe
     future = model.make_future_dataframe(periods=len(test_df))
+
+    # Add region columns to future dataframe
     for region in regions:
         future[f'region_{region}'] = df[f'region_{region}']
+
+    # Add festival columns to future dataframe
+    for festival in festivals['holiday'].unique():
+        future[festival] = 0
+        festival_dates = festivals[festivals['holiday'] == festival]['ds']
+        future.loc[future['ds'].isin(festival_dates), festival] = 1
+
+    # Make predictions
     forecast = model.predict(future)
 
     # Evaluate the model
