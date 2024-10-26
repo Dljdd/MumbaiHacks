@@ -1,32 +1,41 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { WarehouseIcon } from "lucide-react";
-import { ref, push } from "firebase/database"; // Import Firebase database functions
-import {database} from "@/firebase" // Import initialized Firebase
+'use client'
 
-interface Warehouse {
-  id: number;
-  darkStoreName: string;
-  warehouseSize: string;
-  ceilingHeight: string;
-  warehouseAddress: string;
-  storageCapacity: string;
-  loadingDock: boolean;
-  powerBackup: boolean;
-  temperatureControl: string;
-  securityFeatures: string;
-  operationalHours: string;
-  accessibility: string;
-  availableFacilities: string;
-  insuranceCoverage: boolean;
-  fireSafetyCompliance: string;
-  yearOfEstablishment: string;
-  certifications: string;
+import React, { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { ref, push } from "firebase/database"
+import { database } from "@/firebase"
+import { Warehouse, Plus, Save } from "lucide-react"
+
+interface WarehouseType {
+  id: number
+  darkStoreName: string
+  warehouseSize: string
+  ceilingHeight: string
+  warehouseAddress: string
+  storageCapacity: string
+  loadingDock: boolean
+  powerBackup: boolean
+  temperatureControl: string
+  securityFeatures: string
+  operationalHours: string
+  accessibility: string
+  availableFacilities: string
+  insuranceCoverage: boolean
+  fireSafetyCompliance: string
+  yearOfEstablishment: string
+  certifications: string
 }
 
-const MyWarehousesComponent = () => {
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [warehouseDetails, setWarehouseDetails] = useState<Warehouse>({
+export default function Component() {
+  const [warehouses, setWarehouses] = useState<WarehouseType[]>([])
+  const [showForm, setShowForm] = useState(false)
+  const [warehouseDetails, setWarehouseDetails] = useState<WarehouseType>({
     id: 0,
     darkStoreName: "",
     warehouseSize: "",
@@ -44,34 +53,26 @@ const MyWarehousesComponent = () => {
     fireSafetyCompliance: "",
     yearOfEstablishment: "",
     certifications: "",
-  });
-  const [showForm, setShowForm] = useState(false);
-  const [openWarehouseId, setOpenWarehouseId] = useState<number | null>(null);
+  })
 
-  const handleWarehouseChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, type } = e.target;
-    const value = type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
-
-    setWarehouseDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
-    }));
-  };
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, type, value, checked } = e.target
+    setWarehouseDetails((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }))
+  }
 
   const handleWarehouseSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-  
+    e.preventDefault()
     const newWarehouse = {
       ...warehouseDetails,
       id: warehouses.length + 1,
-      isActive: false, // Add the isActive field, set to false by default
-    };
-  
-    // Save the new warehouse to Firebase Realtime Database
-    const warehouseRef = ref(database, 'warehouses'); // Create a reference to the 'warehouses' node in the DB
-    push(warehouseRef, newWarehouse) // Push the new warehouse to Firebase
+    }
+    const warehouseRef = ref(database, "warehouses")
+    push(warehouseRef, newWarehouse)
       .then(() => {
-        setWarehouses([...warehouses, newWarehouse]);
+        setWarehouses([...warehouses, newWarehouse])
         setWarehouseDetails({
           id: 0,
           darkStoreName: "",
@@ -90,314 +91,308 @@ const MyWarehousesComponent = () => {
           fireSafetyCompliance: "",
           yearOfEstablishment: "",
           certifications: "",
-        });
-        setShowForm(false);
+        })
+        setShowForm(false)
       })
       .catch((error) => {
-        console.error("Error saving warehouse to Firebase: ", error);
-      });
-  };
-
-  const toggleWarehouseDetails = (id: number) => {
-    setOpenWarehouseId((prevId) => (prevId === id ? null : id));
-  };
+        console.error("Error saving warehouse to Firebase: ", error)
+      })
+  }
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold">My Warehouses</h2>
-      
-      {/* Display warehouse cards */}
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
+      <h2 className="text-3xl font-bold mb-8">My Warehouses</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {warehouses.map((warehouse) => (
-          <div key={warehouse.id} className="bg-card hover:bg-accent hover:text-accent-foreground transition-all duration-300 ease-in-out p-4 flex items-center justify-between" onClick={() => toggleWarehouseDetails(warehouse.id)}>
-            <div className="flex items-center">
-              <WarehouseIcon className="h-12 w-12 mr-2" />
-              <h3 className="text-xl font-semibold">{`Warehouse ${warehouse.id}`}</h3>
-            </div>
-            <span>{openWarehouseId === warehouse.id ? '-' : '+'}</span> {/* Show caret */}
-          </div>
+          <Card key={warehouse.id} className="bg-gray-800 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{warehouse.darkStoreName}</CardTitle>
+              <Warehouse className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{warehouse.warehouseSize} sq.ft</div>
+              <p className="text-xs text-gray-400">{warehouse.warehouseAddress}</p>
+            </CardContent>
+          </Card>
         ))}
-        
-        <Button
-          variant="outline"
-          className="h-40 text-xl font-semibold border-2 hover:bg-accent hover:text-accent-foreground transition-all duration-300 ease-in-out flex items-center justify-center"
-          onClick={() => setShowForm((prev) => !prev)} // Toggle the form visibility
-        >
-          <span className="mr-2">Add More</span>
-          <span>+</span>
-        </Button>
+        <Card className="bg-gray-800 border-gray-700 hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowForm(true)}>
+          <CardHeader className="flex flex-row items-center justify-center h-full">
+            <Plus className="h-12 w-12 text-blue-400" />
+          </CardHeader>
+        </Card>
       </div>
-
-      {/* Show form if showForm is true */}
       {showForm && (
-        <form className="mt-4 space-y-4" onSubmit={handleWarehouseSubmit}>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="darkStoreName">
-              Dark Store Name
-            </label>
-            <input
-              type="text"
-              id="darkStoreName"
-              name="darkStoreName"
-              value={warehouseDetails.darkStoreName}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Dark Store Name"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="warehouseSize">
-              Warehouse Size (sq.ft)
-            </label>
-            <input
-              type="number"
-              id="warehouseSize"
-              name="warehouseSize"
-              value={warehouseDetails.warehouseSize}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Warehouse Size"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="ceilingHeight">
-              Ceiling Height
-            </label>
-            <input
-              type="number"
-              id="ceilingHeight"
-              name="ceilingHeight"
-              value={warehouseDetails.ceilingHeight}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Ceiling Height"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="warehouseAddress">
-              Warehouse Address
-            </label>
-            <input
-              type="text"
-              id="warehouseAddress"
-              name="warehouseAddress"
-              value={warehouseDetails.warehouseAddress}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Warehouse Address"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="storageCapacity">
-              Storage Capacity (pallets/shelves)
-            </label>
-            <input
-              type="number"
-              id="storageCapacity"
-              name="storageCapacity"
-              value={warehouseDetails.storageCapacity}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Storage Capacity"
-            />
-          </div>
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                name="loadingDock"
-                checked={warehouseDetails.loadingDock}
-                onChange={handleWarehouseChange}
-                className="mr-2"
-              />
-              Loading Dock Availability (Yes/No)
-            </label>
-          </div>
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                name="powerBackup"
-                checked={warehouseDetails.powerBackup}
-                onChange={handleWarehouseChange}
-                className="mr-2"
-              />
-              Power Backup (Yes/No)
-            </label>
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="temperatureControl">
-              Temperature Control (e.g., ambient, refrigerated, frozen)
-            </label>
-            <input
-              type="text"
-              id="temperatureControl"
-              name="temperatureControl"
-              value={warehouseDetails.temperatureControl}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Temperature Control"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="securityFeatures">
-              Security Features (e.g., CCTV, 24/7 security)
-            </label>
-            <input
-              type="text"
-              id="securityFeatures"
-              name="securityFeatures"
-              value={warehouseDetails.securityFeatures}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Security Features"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="operationalHours">
-              Operational Hours
-            </label>
-            <input
-              type="text"
-              id="operationalHours"
-              name="operationalHours"
-              value={warehouseDetails.operationalHours}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Operational Hours"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="accessibility">
-              Accessibility (e.g., parking, ramp access)
-            </label>
-            <input
-              type="text"
-              id="accessibility"
-              name="accessibility"
-              value={warehouseDetails.accessibility}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Accessibility"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="availableFacilities">
-              Available Facilities (e.g., restrooms, break rooms)
-            </label>
-            <input
-              type="text"
-              id="availableFacilities"
-              name="availableFacilities"
-              value={warehouseDetails.availableFacilities}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Available Facilities"
-            />
-          </div>
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                name="insuranceCoverage"
-                checked={warehouseDetails.insuranceCoverage}
-                onChange={handleWarehouseChange}
-                className="mr-2"
-              />
-              Insurance Coverage (Yes/No)
-            </label>
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="fireSafetyCompliance">
-              Fire Safety Compliance (Yes/No, details if applicable)
-            </label>
-            <input
-              type="text"
-              id="fireSafetyCompliance"
-              name="fireSafetyCompliance"
-              value={warehouseDetails.fireSafetyCompliance}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Fire Safety Compliance"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="yearOfEstablishment">
-              Year of Establishment
-            </label>
-            <input
-              type="text"
-              id="yearOfEstablishment"
-              name="yearOfEstablishment"
-              value={warehouseDetails.yearOfEstablishment}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Year of Establishment"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="certifications">
-              Certifications (e.g., FSSAI, ISO, etc., if applicable)
-            </label>
-            <input
-              type="text"
-              id="certifications"
-              name="certifications"
-              value={warehouseDetails.certifications}
-              onChange={handleWarehouseChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              placeholder="Enter Certifications"
-            />
-          </div>
-          <div className="flex justify-center mt-6">
-            <Button variant="outline" className="w-1/3 text-sm" type="submit">
-              Add Warehouse
-            </Button>
-          </div>
-        </form>
-      )}
-
-      {/* Show added warehouses only if they exist */}
-      {warehouses.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-xl font-semibold">Added Warehouses</h3>
-          <ul className="space-y-2">
-            {warehouses.map((warehouse) => (
-              <li key={warehouse.id} className="border-b py-2">
-                <div className="flex justify-between items-center" onClick={() => toggleWarehouseDetails(warehouse.id)}>
-                  <span className="font-semibold">{warehouse.darkStoreName}</span>
-                  <span>{openWarehouseId === warehouse.id ? '-' : '+'}</span>
-                </div>
-                {openWarehouseId === warehouse.id && (
-                  <div className="ml-4 mt-1">
-                    <p>{`Size: ${warehouse.warehouseSize} sq.ft`}</p>
-                    <p>{`Ceiling Height: ${warehouse.ceilingHeight} ft`}</p>
-                    <p>{`Address: ${warehouse.warehouseAddress}`}</p>
-                    <p>{`Storage Capacity: ${warehouse.storageCapacity}`}</p>
-                    <p>{`Loading Dock: ${warehouse.loadingDock ? 'Yes' : 'No'}`}</p>
-                    <p>{`Power Backup: ${warehouse.powerBackup ? 'Yes' : 'No'}`}</p>
-                    <p>{`Temperature Control: ${warehouse.temperatureControl}`}</p>
-                    <p>{`Security Features: ${warehouse.securityFeatures}`}</p>
-                    <p>{`Operational Hours: ${warehouse.operationalHours}`}</p>
-                    <p>{`Accessibility: ${warehouse.accessibility}`}</p>
-                    <p>{`Available Facilities: ${warehouse.availableFacilities}`}</p>
-                    <p>{`Insurance Coverage: ${warehouse.insuranceCoverage ? 'Yes' : 'No'}`}</p>
-                    <p>{`Fire Safety Compliance: ${warehouse.fireSafetyCompliance}`}</p>
-                    <p>{`Year of Establishment: ${warehouse.yearOfEstablishment}`}</p>
-                    <p>{`Certifications: ${warehouse.certifications}`}</p>
+        <Card className="bg-gray-800 border-gray-700 mb-8">
+          <CardHeader>
+            <CardTitle>Add New Warehouse</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleWarehouseSubmit} className="space-y-4">
+              <ScrollArea className="h-[60vh] pr-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="darkStoreName">Dark Store Name</Label>
+                      <Input
+                        id="darkStoreName"
+                        name="darkStoreName"
+                        value={warehouseDetails.darkStoreName}
+                        onChange={handleWarehouseChange}
+                        className="bg-gray-700 border-gray-600"
+                        placeholder="Enter Dark Store Name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="warehouseSize">Warehouse Size (sq.ft)</Label>
+                      <Input
+                        type="number"
+                        id="warehouseSize"
+                        name="warehouseSize"
+                        value={warehouseDetails.warehouseSize}
+                        onChange={handleWarehouseChange}
+                        className="bg-gray-700 border-gray-600"
+                        placeholder="Enter Warehouse Size"
+                        required
+                      />
+                    </div>
                   </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ceilingHeight">Ceiling Height</Label>
+                      <Input
+                        type="number"
+                        id="ceilingHeight"
+                        name="ceilingHeight"
+                        value={warehouseDetails.ceilingHeight}
+                        onChange={handleWarehouseChange}
+                        className="bg-gray-700 border-gray-600"
+                        placeholder="Enter Ceiling Height"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="storageCapacity">Storage Capacity (pallets/shelves)</Label>
+                      <Input
+                        type="number"
+                        id="storageCapacity"
+                        name="storageCapacity"
+                        value={warehouseDetails.storageCapacity}
+                        onChange={handleWarehouseChange}
+                        className="bg-gray-700 border-gray-600"
+                        placeholder="Enter Storage Capacity"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="warehouseAddress">Warehouse Address</Label>
+                    <Input
+                      id="warehouseAddress"
+                      name="warehouseAddress"
+                      value={warehouseDetails.warehouseAddress}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="Enter Warehouse Address"
+                      required
+                    />
+                  </div>
+                  <div className="flex space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="loadingDock"
+                        name="loadingDock"
+                        checked={warehouseDetails.loadingDock}
+                        onCheckedChange={(checked) =>
+                          setWarehouseDetails((prev) => ({ ...prev, loadingDock: checked as boolean }))
+                        }
+                      />
+                      <Label htmlFor="loadingDock">Loading Dock</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="powerBackup"
+                        name="powerBackup"
+                        checked={warehouseDetails.powerBackup}
+                        onCheckedChange={(checked) =>
+                          setWarehouseDetails((prev) => ({ ...prev, powerBackup: checked as boolean }))
+                        }
+                      />
+                      <Label htmlFor="powerBackup">Power Backup</Label>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="temperatureControl">Temperature Control</Label>
+                    <Input
+                      id="temperatureControl"
+                      name="temperatureControl"
+                      value={warehouseDetails.temperatureControl}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="e.g., ambient, refrigerated, frozen"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="securityFeatures">Security Features</Label>
+                    <Input
+                      id="securityFeatures"
+                      name="securityFeatures"
+                      value={warehouseDetails.securityFeatures}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="e.g., CCTV, 24/7 security"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="operationalHours">Operational Hours</Label>
+                    <Input
+                      id="operationalHours"
+                      name="operationalHours"
+                      value={warehouseDetails.operationalHours}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="Enter Operational Hours"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="accessibility">Accessibility</Label>
+                    <Input
+                      id="accessibility"
+                      name="accessibility"
+                      value={warehouseDetails.accessibility}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="e.g., parking, ramp access"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="availableFacilities">Available Facilities</Label>
+                    <Input
+                      id="availableFacilities"
+                      name="availableFacilities"
+                      value={warehouseDetails.availableFacilities}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="e.g., restrooms, break rooms"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="insuranceCoverage"
+                      name="insuranceCoverage"
+                      checked={warehouseDetails.insuranceCoverage}
+                      onCheckedChange={(checked) =>
+                        setWarehouseDetails((prev) => ({ ...prev, insuranceCoverage: checked as boolean }))
+                      }
+                    />
+                    <Label htmlFor="insuranceCoverage">Insurance Coverage</Label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fireSafetyCompliance">Fire Safety Compliance</Label>
+                    <Input
+                      id="fireSafetyCompliance"
+                      name="fireSafetyCompliance"
+                      value={warehouseDetails.fireSafetyCompliance}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="Enter Fire Safety Compliance"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="yearOfEstablishment">Year of Establishment</Label>
+                    <Input
+                      id="yearOfEstablishment"
+                      name="yearOfEstablishment"
+                      value={warehouseDetails.yearOfEstablishment}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="Enter Year of Establishment"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="certifications">Certifications</Label>
+                    <Input
+                      id="certifications"
+                      name="certifications"
+                      value={warehouseDetails.certifications}
+                      onChange={handleWarehouseChange}
+                      className="bg-gray-700 border-gray-600"
+                      placeholder="e.g., FSSAI, ISO"
+                    />
+                  </div>
+                </div>
+              </ScrollArea>
+              <Button type="submit" className="w-full">
+                <Save className="mr-2 h-4 w-4" /> Add Warehouse
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+      {warehouses.length > 0 && (
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle>Warehouse Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              {warehouses.map((warehouse) => (
+                <AccordionItem key={warehouse.id} value={`item-${warehouse.id}`}>
+                  <AccordionTrigger>{warehouse.darkStoreName}</AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2">
+                      <p>
+                        <strong>Size:</strong> {warehouse.warehouseSize} sq.ft
+                      </p>
+                      <p>
+                        <strong>Ceiling Height:</strong> {warehouse.ceilingHeight} ft
+                      </p>
+                      <p>
+                        <strong>Address:</strong> {warehouse.warehouseAddress}
+                      </p>
+                      <p>
+                        <strong>Storage Capacity:</strong> {warehouse.storageCapacity}
+                      </p>
+                      <p>
+                        <strong>Loading Dock:</strong> {warehouse.loadingDock ?   "Yes" : "No"}
+                      </p>
+                      <p>
+                        <strong>Power Backup:</strong> {warehouse.powerBackup ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        <strong>Temperature Control:</strong> {warehouse.temperatureControl}
+                      </p>
+                      <p>
+                        <strong>Security Features:</strong> {warehouse.securityFeatures}
+                      </p>
+                      <p>
+                        <strong>Operational Hours:</strong> {warehouse.operationalHours}
+                      </p>
+                      <p>
+                        <strong>Accessibility:</strong> {warehouse.accessibility}
+                      </p>
+                      <p>
+                        <strong>Available Facilities:</strong> {warehouse.availableFacilities}
+                      </p>
+                      <p>
+                        <strong>Insurance Coverage:</strong> {warehouse.insuranceCoverage ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        <strong>Fire Safety Compliance:</strong> {warehouse.fireSafetyCompliance}
+                      </p>
+                      <p>
+                        <strong>Year of Establishment:</strong> {warehouse.yearOfEstablishment}
+                      </p>
+                      <p>
+                        <strong>Certifications:</strong> {warehouse.certifications}
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
       )}
     </div>
-  );
-};
-
-export default MyWarehousesComponent;
+  )
+}
