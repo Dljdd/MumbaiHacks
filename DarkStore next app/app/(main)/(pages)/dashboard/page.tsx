@@ -1,36 +1,34 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { UserIcon, AppWindowIcon, WarehouseIcon } from "lucide-react";
 import MyDetailsComponent from "@/components/dashboardPages/MyDetails";
 import MyApplicationsComponent from "@/components/dashboardPages/MyApplication";
 import MyWarehousesComponent from "@/components/dashboardPages/MyWarehouses";
-import { UserIcon, AppWindowIcon, WarehouseIcon } from "lucide-react";
 import './dashboard.css';
-const DashboardPage = () => {
-  const [activeSection, setActiveSection] = useState(""); // State to track the active section
-  const [loading, setLoading] = useState(true); // State to track loading
 
-  // Effect to simulate loading for 3 seconds
+const DashboardPage = () => {
+  const [activeSection, setActiveSection] = useState("");
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 3000); // Set loading to false after 3 seconds
+    }, 3000);
 
-    return () => clearTimeout(timer); // Cleanup timer on unmount
+    return () => clearTimeout(timer);
   }, []);
 
-  // Inside the loading check
-if (loading) {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
-      <div className="loader-container">
-        <div className="loader"></div>
-        <p className="mt-4 text-lg">Loading...</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+        <div className="loader-container">
+          <div className="loader"></div>
+          <p className="mt-4 text-lg">Loading...</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 relative min-h-screen bg-background text-foreground">
@@ -38,50 +36,69 @@ if (loading) {
         Account
       </h1>
       <div className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-40 text-xl font-semibold border-2 hover:bg-accent hover:text-accent-foreground transition-all duration-300 ease-in-out"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
+          <DashboardButton
+            icon={<UserIcon className="h-12 w-12" />}
+            title="My Details"
             onClick={() => setActiveSection("details")}
-          >
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <UserIcon className="h-12 w-12" />
-              <span>My Details</span>
-            </div>
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-40 text-xl font-semibold border-2 hover:bg-accent hover:text-accent-foreground transition-all duration-300 ease-in-out"
+            active={activeSection === "details"}
+            gradient="from-blue-500 to-purple-600"
+          />
+          <DashboardButton
+            icon={<AppWindowIcon className="h-12 w-12" />}
+            title="My Applications"
             onClick={() => setActiveSection("applications")}
-          >
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <AppWindowIcon className="h-12 w-12" />
-              <span>My Applications</span>
-            </div>
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-40 text-xl font-semibold border-2 hover:bg-accent hover:text-accent-foreground transition-all duration-300 ease-in-out"
+            active={activeSection === "applications"}
+            gradient="from-green-500 to-teal-600"
+          />
+          <DashboardButton
+            icon={<WarehouseIcon className="h-12 w-12" />}
+            title="My Warehouses"
             onClick={() => setActiveSection("warehouses")}
-          >
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <WarehouseIcon className="h-12 w-12" />
-              <span>My Warehouses</span>
-            </div>
-          </Button>
+            active={activeSection === "warehouses"}
+            gradient="from-orange-500 to-red-600"
+          />
         </div>
 
-        {/* Render based on active section */}
-        <div className="mt-6 w-full max-w-2xl bg-card p-6">
+        <div className="mt-12 w-full max-w-2xl bg-card p-6 rounded-lg shadow-lg">
           {activeSection === "details" && <MyDetailsComponent />}
           {activeSection === "applications" && <MyApplicationsComponent />}
           {activeSection === "warehouses" && <MyWarehousesComponent />}
         </div>
       </div>
     </div>
+  );
+};
+
+interface DashboardButtonProps {
+  icon: React.ReactNode;
+  title: string;
+  onClick: () => void;
+  active: boolean;
+  gradient: string;
+}
+
+const DashboardButton: React.FC<DashboardButtonProps> = ({ icon, title, onClick, active, gradient }) => {
+  return (
+    <button
+      className={`
+        relative overflow-hidden rounded-2xl transition-all duration-300 ease-in-out
+        ${active ? 'scale-105' : 'scale-100 hover:scale-105'}
+        group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary
+      `}
+      onClick={onClick}
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-80 group-hover:opacity-100 transition-opacity duration-300`} />
+      <div className="relative z-10 flex flex-col items-center justify-center p-8 h-64 text-white">
+        <div className="mb-4 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+          {icon}
+        </div>
+        <h3 className="text-2xl font-bold mb-2 tracking-wider">{title}</h3>
+        <div className="h-1 w-12 bg-white rounded-full transform origin-left transition-all duration-300 group-hover:w-24" />
+      </div>
+      <div className="absolute inset-0 border-4 border-white rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    </button>
   );
 };
 
