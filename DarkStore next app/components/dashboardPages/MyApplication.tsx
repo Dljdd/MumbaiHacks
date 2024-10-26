@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
+import { ref, get } from "firebase/database";
+import { database } from "@/firebase";
 
 const MyApplicationsComponent = () => {
   const [applications, setApplications] = useState([
@@ -8,19 +9,27 @@ const MyApplicationsComponent = () => {
     { name: "Zepto", status: "Apply" },
     { name: "BigBasket", status: "Apply" },
   ]);
+  const [userEmail, setUserEmail] = useState("");
 
-  const handleButtonClick = (index: number) => {
-    const newApplications = [...applications];
-    if (newApplications[index].status === "Apply") {
-      newApplications[index].status = "In Review";
-    } else if (newApplications[index].status === "In Review") {
-      newApplications[index].status = "Approved";
-    } else if (newApplications[index].status === "Approved") {
-      newApplications[index].status = "Rejected";
-    } else {
-      newApplications[index].status = "Apply";
+  useEffect(() => {
+    const email = localStorage.getItem("userEmail") || "";
+    setUserEmail(email);
+
+    if (email) {
+      fetchApplicationStatus(email);
     }
-    setApplications(newApplications);
+  }, []);
+
+  const fetchApplicationStatus = async (email: string) => {
+    const userRef = ref(database, `users/${email.replace(".", ",")}/applications`);
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+      const userApplications = snapshot.val();
+      setApplications(applications.map(app => ({
+        ...app,
+        status: userApplications[app.name] || "Apply"
+      })));
+    }
   };
 
   return (
@@ -30,23 +39,19 @@ const MyApplicationsComponent = () => {
         {applications.map((app, index) => (
           <div key={index} className="flex justify-between items-center border-b py-2">
             <span>{app.name}</span>
-            <Button
-              variant="outline"
-              onClick={() => handleButtonClick(index)}
-              className={`text-sm transition-colors duration-300 ease-in-out ${
-                app.status === "Apply"
-                  ? "hover:bg-white hover:text-black"
-                  : app.status === "In Review"
-                  ? "bg-yellow-300 text-black hover:bg-yellow-400"
-                  : app.status === "Approved"
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : app.status === "Rejected"
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : ""
-              }`}
-            >
+            <span className={`text-sm px-3 py-1 rounded-full ${
+              app.status === "Apply"
+                ? "bg-gray-200 text-gray-800"
+                : app.status === "In Review"
+                ? "bg-yellow-300 text-black"
+                : app.status === "Approved"
+                ? "bg-green-500 text-white"
+                : app.status === "Rejected"
+                ? "bg-red-500 text-white"
+                : ""
+            }`}>
               {app.status}
-            </Button>
+            </span>
           </div>
         ))}
       </div>

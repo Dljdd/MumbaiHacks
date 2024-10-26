@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { ref, set, get } from "firebase/database";
+import { database } from "@/firebase"; // Make sure this import is correct
 
 const MyDetailsComponent = () => {
   const [userDetails, setUserDetails] = useState({
@@ -9,6 +11,19 @@ const MyDetailsComponent = () => {
     pan: "",
     email: "",
   });
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    // Fetch existing user details when component mounts
+    const userRef = ref(database, 'myDetails');
+    get(userRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        setUserDetails(snapshot.val());
+      }
+    }).catch((error) => {
+      console.error("Error fetching user details:", error);
+    });
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,7 +35,17 @@ const MyDetailsComponent = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("User Details Submitted:", userDetails);
+    const userRef = ref(database, 'myDetails');
+    set(userRef, userDetails)
+      .then(() => {
+        console.log("User Details Saved Successfully");
+        localStorage.setItem("userEmail", userDetails.email);
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 3000);
+      })
+      .catch((error) => {
+        console.error("Error saving user details:", error);
+      });
   };
 
   return (
@@ -115,6 +140,13 @@ const MyDetailsComponent = () => {
           </Button>
         </div>
       </form>
+      {showPopup && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded-md">
+            <p className="text-green-600 font-semibold">Data saved successfully!</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
