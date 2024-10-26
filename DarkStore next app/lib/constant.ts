@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Category from '@/components/icons/category'
 import Logs from '@/components/icons/clipboard'
 import Templates from '@/components/icons/cloud_download'
@@ -95,9 +96,9 @@ export const menuOptions = [
   { name: 'Dashboard', Component: Home, href: '/dashboard' },
   { name: 'Workflows', Component: Workflows, href: '/workflows' },
   { name: 'Settings', Component: Settings, href: '/settings' },
-  { name: 'Connections', Component: Category, href: '/connections' },
-  { name: 'Billing', Component: Payment, href: '/billing' },
-  { name: 'Templates', Component: Templates, href: '/templates' },
-  { name: 'Logs', Component: Logs, href: '/logs' },
+  // { name: 'Connections', Component: Category, href: '/connections' },
+  // { name: 'Billing', Component: Payment, href: '/billing' },
+  // { name: 'Templates', Component: Templates, href: '/templates' },
+  // { name: 'Logs', Component: Logs, href: '/logs' },
 ]
 
