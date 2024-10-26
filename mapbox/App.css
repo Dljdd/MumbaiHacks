@@ -1,0 +1,59 @@
+.container {
+  display: flex;
+  height: 100vh; /* Full screen height */
+}
+
+.left-section,
+.right-section {
+  flex: 1; /* Each section takes 50% of the width */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.left-section {
+  background-color: #f0f0f0;
+}
+
+.right-section {
+  background-color: #f5f5f5;
+  padding: 20px;
+  flex-direction: column; /* Stack top and bottom divs */
+  width: 100%; /* Ensure right-section takes full width */
+}
+
+.dropdown {
+  margin: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.dropdown-select {
+  padding: 10px;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.dropdown-select:hover {
+  border-color: #0056b3;
+}
+
+.top {
+  height: 67px;
+  background-color: lightcoral;
+  flex-shrink: 0;
+  width: 100%; /* Make top div take full width */
+  display: flex;
+  align-items: center; /* Vertically center contents */
+  justify-content: center; /* Horizontally center contents */
+}
+
+.bottom {
+  background-color: lightgreen;
+  flex-grow: 1;
+  overflow: auto;
+  width: 100%; /* Make bottom div take full width */
+}
