@@ -3,7 +3,6 @@ import { ref, get, set } from "firebase/database";
 import { database } from "@/firebase";
 import { Calculator } from "lucide-react";
 
-// Define base earnings per hour for each platform
 const PLATFORM_EARNINGS = {
   Swiggy: {
     baseRate: 200,
@@ -90,14 +89,11 @@ const MyApplicationsComponent = () => {
     }
   };
 
-  // Function to apply for a platform
   const handleApply = async (platformName: string) => {
     const emailRef = ref(database, `users/${userEmail.replace(".", ",")}/applications/${platformName}`);
     
-    // Set the application status to "In Review" in the database
     await set(emailRef, "In Review");
     
-    // Update the local state to reflect the new status
     setApplications((prevApps) =>
       prevApps.map((app) =>
         app.name === platformName ? { ...app, status: "In Review" } : app
@@ -131,19 +127,22 @@ const MyApplicationsComponent = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <span className={`text-sm px-4 py-2 rounded-full font-medium ${
-                  app.status === "Apply"
-                    ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-                    : app.status === "In Review"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                    : app.status === "Approved"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                    : app.status === "Rejected"
-                    ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                    : ""
-                }`}>
-                  {app.status}
-                </span>
+                {/* Conditionally render status only if it's not "Apply" */}
+                {app.status !== "Apply" && (
+                  <span className={`text-sm px-4 py-2 rounded-full font-medium ${
+                    app.status === "In Review"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                      : app.status === "Approved"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                      : app.status === "Rejected"
+                      ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                      : ""
+                  }`}>
+                    {app.status}
+                  </span>
+                )}
+                
+                {/* Render the "Apply" button only if the status is "Apply" */}
                 {app.status === "Apply" && (
                   <button
                     onClick={() => handleApply(app.name)}
