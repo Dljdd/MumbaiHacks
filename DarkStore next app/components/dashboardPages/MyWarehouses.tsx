@@ -1,25 +1,27 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { WarehouseIcon } from "lucide-react"; // Ensure you have lucide-react installed
+import { WarehouseIcon } from "lucide-react";
+import { ref, push } from "firebase/database"; // Import Firebase database functions
+import {database} from "@/firebase" // Import initialized Firebase
 
 interface Warehouse {
-  id: number; // ID for each warehouse
+  id: number;
   darkStoreName: string;
   warehouseSize: string;
   ceilingHeight: string;
   warehouseAddress: string;
-  storageCapacity: string; // New field
-  loadingDock: boolean; // New field
-  powerBackup: boolean; // New field
-  temperatureControl: string; // New field
-  securityFeatures: string; // New field
-  operationalHours: string; // New field
-  accessibility: string; // New field
-  availableFacilities: string; // New field
-  insuranceCoverage: boolean; // New field
-  fireSafetyCompliance: string; // New field
-  yearOfEstablishment: string; // New field
-  certifications: string; // New field
+  storageCapacity: string;
+  loadingDock: boolean;
+  powerBackup: boolean;
+  temperatureControl: string;
+  securityFeatures: string;
+  operationalHours: string;
+  accessibility: string;
+  availableFacilities: string;
+  insuranceCoverage: boolean;
+  fireSafetyCompliance: string;
+  yearOfEstablishment: string;
+  certifications: string;
 }
 
 const MyWarehousesComponent = () => {
@@ -43,16 +45,16 @@ const MyWarehousesComponent = () => {
     yearOfEstablishment: "",
     certifications: "",
   });
-  const [showForm, setShowForm] = useState(false); // Toggle form visibility
-  const [openWarehouseId, setOpenWarehouseId] = useState<number | null>(null); // Track which warehouse is open
+  const [showForm, setShowForm] = useState(false);
+  const [openWarehouseId, setOpenWarehouseId] = useState<number | null>(null);
 
   const handleWarehouseChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, type } = e.target; // Get name and type directly
-    const value = type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value; // Get value based on type
-  
+    const { name, type } = e.target;
+    const value = type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
+
     setWarehouseDetails((prevDetails) => ({
       ...prevDetails,
-      [name]: value, // Use the correctly determined value
+      [name]: value,
     }));
   };
 
@@ -61,34 +63,42 @@ const MyWarehousesComponent = () => {
 
     const newWarehouse = {
       ...warehouseDetails,
-      id: warehouses.length + 1, // Generate a unique id
+      id: warehouses.length + 1,
     };
 
-    setWarehouses([...warehouses, newWarehouse]);
-    setWarehouseDetails({
-      id: 0,
-      darkStoreName: "",
-      warehouseSize: "",
-      ceilingHeight: "",
-      warehouseAddress: "",
-      storageCapacity: "",
-      loadingDock: false,
-      powerBackup: false,
-      temperatureControl: "",
-      securityFeatures: "",
-      operationalHours: "",
-      accessibility: "",
-      availableFacilities: "",
-      insuranceCoverage: false,
-      fireSafetyCompliance: "",
-      yearOfEstablishment: "",
-      certifications: "",
-    }); // Reset form
-    setShowForm(false); // Hide the form after submission
+    // Save the new warehouse to Firebase Realtime Database
+    const warehouseRef = ref(database, 'warehouses'); // Create a reference to the 'warehouses' node in the DB
+    push(warehouseRef, newWarehouse) // Push the new warehouse to Firebase
+      .then(() => {
+        setWarehouses([...warehouses, newWarehouse]);
+        setWarehouseDetails({
+          id: 0,
+          darkStoreName: "",
+          warehouseSize: "",
+          ceilingHeight: "",
+          warehouseAddress: "",
+          storageCapacity: "",
+          loadingDock: false,
+          powerBackup: false,
+          temperatureControl: "",
+          securityFeatures: "",
+          operationalHours: "",
+          accessibility: "",
+          availableFacilities: "",
+          insuranceCoverage: false,
+          fireSafetyCompliance: "",
+          yearOfEstablishment: "",
+          certifications: "",
+        });
+        setShowForm(false);
+      })
+      .catch((error) => {
+        console.error("Error saving warehouse to Firebase: ", error);
+      });
   };
 
   const toggleWarehouseDetails = (id: number) => {
-    setOpenWarehouseId((prevId) => (prevId === id ? null : id)); // Toggle warehouse details
+    setOpenWarehouseId((prevId) => (prevId === id ? null : id));
   };
 
   return (
