@@ -1,72 +1,140 @@
 import React, { useEffect, useRef } from 'react';
-import mapboxgl from '!mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import populationDensityData from './data/population_density.json';
+import coordsData from './data/coords.json';
+import coordsSupplyData from './data/coords2.json';
 
-const MapboxExample = () => {
-  const mapContainerRef = useRef(null);
+const MapboxExample = ({ heatmapType }) => {
+  const mapContainerRef = useRef();
+  const markerRef = useRef(null);
 
   useEffect(() => {
-    console.log('MapboxExample useEffect started');
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2FhZDEwMjMiLCJhIjoiY20yb3YxaGN4MGwwazJqczNwYTBlNzgwNyJ9.mvTybZ2s3abpNYVbQiUbpg';
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: [72.8777, 19.0760],
-      zoom: 10
+      center: [72.8977, 19.0760],
+      zoom: 11,
     });
 
+    const addHeatmapLayer = (data, coords) => {
+      const heatmapData = Object.keys(data).map(location => {
+        const coordinates = coords[location];
+        return {
+          location: coordinates,
+          density: data[location],
+        };
+      }).filter(item => item.location);
+
+      map.addSource('heatmap-data', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: heatmapData.map(item => ({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: item.location,
+            },
+            properties: {
+              density: item.density,
+            },
+          })),
+        },
+      });
+
+      map.addLayer({
+        id: 'heatmap',
+        type: 'heatmap',
+        source: 'heatmap-data',
+        maxzoom: 15,
+        paint: {
+          'heatmap-weight': [
+            'interpolate',
+            ['linear'],
+            ['get', 'density'],
+            0, 0,
+            100000, 1,
+          ],
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0, 'rgba(0, 0, 0, 0)',
+            0.1, 'rgba(255, 0, 0, 0.8)',
+            0.3, 'rgba(255, 165, 0, 0.8)',
+            0.5, 'rgba(255, 255, 0, 0.8)',
+            0.7, 'rgba(0, 255, 0, 0.8)',
+            1, 'rgba(0, 0, 255, 0.8)',
+          ],
+          'heatmap-radius': 130,
+        },
+      });
+    };
+
     map.on('load', () => {
-      console.log('Map loaded');
+      if (map.getLayer('heatmap')) {
+        map.removeLayer('heatmap');
+        map.removeSource('heatmap-data');
+      }
+
+      if (heatmapType === 'population_density') {
+        addHeatmapLayer(populationDensityData, coordsData);
+      } else if (heatmapType === 'supply') {
+        addHeatmapLayer(populationDensityData, coordsSupplyData);
+      }
+
       fetch('/DS2.geojson')
-        .then(response => {
-          console.log('GeoJSON response:', response);
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-          console.log('GeoJSON data:', data);
-          
-          // Add custom markers
           data.features.forEach((feature) => {
             const { geometry, properties } = feature;
             const { coordinates } = geometry;
 
-            // Create a DOM element for the marker
             const el = document.createElement('div');
             el.className = 'marker';
             
-            // Create an image element
             const img = document.createElement('img');
-            img.src = '/onlyLogo-removebg-preview.png';
+            img.src = '/zepto.png';
             img.style.width = '100%';
             img.style.height = '100%';
             
-            // Add error handling for image loading
             img.onerror = () => {
               console.error('Failed to load marker image');
-              el.style.backgroundColor = 'red'; // Fallback color
+              el.style.backgroundColor = 'red';
             };
             
             el.appendChild(img);
 
-            // Create the popup
             const popup = new mapboxgl.Popup({ offset: 25 })
               .setHTML(`<h3>${properties.region}</h3>`);
 
-            // Create the marker
             new mapboxgl.Marker(el)
               .setLngLat(coordinates)
               .setPopup(popup)
               .addTo(map);
-
-            console.log(`Marker added for ${properties.region}`);
           });
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
     });
 
+    map.on('click', (e) => {
+      const coordinates = e.lngLat;
+      console.log(`Clicked coordinates: ${coordinates.lng}, ${coordinates.lat}`);
+
+      if (markerRef.current) {
+        markerRef.current.remove();
+      }
+
+      markerRef.current = new mapboxgl.Marker({ color: 'red' })
+        .setLngLat(coordinates)
+        .addTo(map);
+    });
+
     return () => map.remove();
-  }, []);
+  }, [heatmapType]);
 
   return <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />;
 };
