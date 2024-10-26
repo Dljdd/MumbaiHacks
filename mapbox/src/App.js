@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import MapboxExample from './MapboxExample';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import logo from './logo.jpeg'; // Update with the actual path to your logo
 
 const App = () => {
   return (
@@ -20,8 +19,6 @@ const App = () => {
               <option value="pop_density">Population Density</option>
             </select>
           </div>
-          <button className="optimize-button">Optimize</button>
-          <img src={logo} alt="Website Logo" className="logo" />
         </div>
         <div className="bottom">
           Bottom stuff
