@@ -1,14 +1,36 @@
-'use client'
+'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import MyDetailsComponent from "@/components/dashboardPages/MyDetails"
+import MyDetailsComponent from "@/components/dashboardPages/MyDetails";
 import MyApplicationsComponent from "@/components/dashboardPages/MyApplication";
 import MyWarehousesComponent from "@/components/dashboardPages/MyWarehouses";
 import { UserIcon, AppWindowIcon, WarehouseIcon } from "lucide-react";
-
+import './dashboard.css';
 const DashboardPage = () => {
   const [activeSection, setActiveSection] = useState(""); // State to track the active section
+  const [loading, setLoading] = useState(true); // State to track loading
+
+  // Effect to simulate loading for 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 3000); // Set loading to false after 3 seconds
+
+    return () => clearTimeout(timer); // Cleanup timer on unmount
+  }, []);
+
+  // Inside the loading check
+if (loading) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+      <div className="loader-container">
+        <div className="loader"></div>
+        <p className="mt-4 text-lg">Loading...</p>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="flex flex-col gap-4 relative min-h-screen bg-background text-foreground">

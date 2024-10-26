@@ -1,3 +1,4 @@
+"use client"
 import Navbar from "@/components/global/navbar";
 import { ContainerScroll } from "@/components/global/container-scroll-animation";
 import { Button } from "@/components/ui/button";
@@ -7,8 +8,11 @@ import { HeroParallax } from "@/components/global/connect-parallax";
 import { LampComponent } from "@/components/global/lamp";
 import { CardBody, CardContainer, CardItem } from "@/components/global/3d-card";
 import { CheckIcon } from "lucide-react";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function Home() {
+  const router = useRouter(); // Initialize router
+
   return (
     <main>
       <Navbar />
@@ -28,6 +32,7 @@ export default function Home() {
                 <Button
                   size={"lg"}
                   className="p-8 mt-8 md:mb-0 text-2xl w-full sm:w-fit border-t-2 rounded-full border-[#4D4D4D] bg-[#1F1F1F] hover:bg-white group transition-all flex items-center justify-center gap-4 hover:shadow-xl hover:shadow-neutral-500 duration-500"
+                  onClick={() => router.push('/dashboard')} // Redirect to /dashboard
                 >
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-neutral-500 to-neutral-600 md:text-center font-sans group-hover:bg-gradient-to-r group-hover:from-black group-hover:to-black">
                     Start Optimizing with ZoneScore Today
