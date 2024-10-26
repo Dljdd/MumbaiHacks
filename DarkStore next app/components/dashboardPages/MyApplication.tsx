@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ref, get } from "firebase/database";
+import { ref, get, set } from "firebase/database";
 import { database } from "@/firebase";
 import { Calculator } from "lucide-react";
 
@@ -8,64 +8,65 @@ const PLATFORM_EARNINGS = {
   Swiggy: {
     baseRate: 200,
     peakBonus: 50,
-    nightBonus: 30
+    nightBonus: 30,
   },
   Blinkit: {
     baseRate: 180,
     peakBonus: 40,
-    nightBonus: 35
+    nightBonus: 35,
   },
   Zepto: {
     baseRate: 220,
     peakBonus: 45,
-    nightBonus: 40
+    nightBonus: 40,
   },
   BigBasket: {
     baseRate: 190,
     peakBonus: 35,
-    nightBonus: 25
-  }
+    nightBonus: 25,
+  },
 };
 
 const MyApplicationsComponent = () => {
   const [applications, setApplications] = useState([
-    { 
-      name: "Swiggy", 
+    {
+      name: "Swiggy",
       status: "Apply",
       earnings: {
         base: PLATFORM_EARNINGS.Swiggy.baseRate,
         peak: PLATFORM_EARNINGS.Swiggy.baseRate + PLATFORM_EARNINGS.Swiggy.peakBonus,
-        night: PLATFORM_EARNINGS.Swiggy.baseRate + PLATFORM_EARNINGS.Swiggy.nightBonus
-      }
+        night: PLATFORM_EARNINGS.Swiggy.baseRate + PLATFORM_EARNINGS.Swiggy.nightBonus,
+      },
     },
-    { 
-      name: "Blinkit", 
+    {
+      name: "Blinkit",
       status: "Apply",
       earnings: {
         base: PLATFORM_EARNINGS.Blinkit.baseRate,
         peak: PLATFORM_EARNINGS.Blinkit.baseRate + PLATFORM_EARNINGS.Blinkit.peakBonus,
-        night: PLATFORM_EARNINGS.Blinkit.baseRate + PLATFORM_EARNINGS.Blinkit.nightBonus
-      }
+        night: PLATFORM_EARNINGS.Blinkit.baseRate + PLATFORM_EARNINGS.Blinkit.nightBonus,
+      },
     },
-    { 
-      name: "Zepto", 
+    {
+      name: "Zepto",
       status: "Apply",
       earnings: {
         base: PLATFORM_EARNINGS.Zepto.baseRate,
         peak: PLATFORM_EARNINGS.Zepto.baseRate + PLATFORM_EARNINGS.Zepto.peakBonus,
-        night: PLATFORM_EARNINGS.Zepto.baseRate + PLATFORM_EARNINGS.Zepto.nightBonus
-      }
+        night: PLATFORM_EARNINGS.Zepto.baseRate + PLATFORM_EARNINGS.Zepto.nightBonus,
+      },
     },
-    { 
-      name: "BigBasket", 
+    {
+      name: "BigBasket",
       status: "Apply",
       earnings: {
         base: PLATFORM_EARNINGS.BigBasket.baseRate,
         peak: PLATFORM_EARNINGS.BigBasket.baseRate + PLATFORM_EARNINGS.BigBasket.peakBonus,
-        night: PLATFORM_EARNINGS.BigBasket.baseRate + PLATFORM_EARNINGS.BigBasket.nightBonus
-      }
+        night: PLATFORM_EARNINGS.BigBasket.baseRate + PLATFORM_EARNINGS.BigBasket.nightBonus,
+      },
     },
   ]);
+  
   const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
@@ -82,11 +83,26 @@ const MyApplicationsComponent = () => {
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
       const userApplications = snapshot.val();
-      setApplications(applications.map(app => ({
+      setApplications(applications.map((app) => ({
         ...app,
-        status: userApplications[app.name] || "Apply"
+        status: userApplications[app.name] || "Apply",
       })));
     }
+  };
+
+  // Function to apply for a platform
+  const handleApply = async (platformName: string) => {
+    const emailRef = ref(database, `users/${userEmail.replace(".", ",")}/applications/${platformName}`);
+    
+    // Set the application status to "In Review" in the database
+    await set(emailRef, "In Review");
+    
+    // Update the local state to reflect the new status
+    setApplications((prevApps) =>
+      prevApps.map((app) =>
+        app.name === platformName ? { ...app, status: "In Review" } : app
+      )
+    );
   };
 
   return (
@@ -128,6 +144,14 @@ const MyApplicationsComponent = () => {
                 }`}>
                   {app.status}
                 </span>
+                {app.status === "Apply" && (
+                  <button
+                    onClick={() => handleApply(app.name)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
+                  >
+                    Apply
+                  </button>
+                )}
               </div>
             </div>
           </div>
