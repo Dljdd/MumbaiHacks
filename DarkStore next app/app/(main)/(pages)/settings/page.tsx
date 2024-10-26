@@ -2,15 +2,28 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
+import { ref, onValue } from 'firebase/database';
+import { database } from '@/firebase'; // Make sure this path is correct
 import data from '@/data.json'; // Import the warehouse data
 
 type WarehouseData = {
-  owner: string;
+  id: string;
+  darkStoreName: string;
   warehouseSize: string;
-  pincode: string;
-  areaName: string;
-  zoneScore: number;
-  status: string;
+  ceilingHeight: string;
+  warehouseAddress: string;
+  storageCapacity: string;
+  loadingDock: boolean;
+  powerBackup: boolean;
+  temperatureControl: string;
+  securityFeatures: string;
+  operationalHours: string;
+  accessibility: string;
+  availableFacilities: string;
+  insuranceCoverage: boolean;
+  fireSafetyCompliance: string;
+  yearOfEstablishment: string;
+  certifications: string;
 };
 
 type Props = {}
@@ -18,20 +31,30 @@ type Props = {}
 const Settings = (props: Props) => {
   const [filterBy, setFilterBy] = useState<string>(''); // State for filter
   const [sortBy, setSortBy] = useState<string>(''); // State for sort
-  const [filteredData, setFilteredData] = useState<WarehouseData[]>(data); // Filtered and sorted data state
+  const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
 
-  // Helper function for converting warehouse size to a number for sorting
-  const parseWarehouseSize = (size: string): number => {
-    return parseInt(size.replace(/[^\d]/g, '')); // Remove any non-digit characters and convert to number
-  };
+  // Effect to handle fetching warehouse data from Firebase
+  useEffect(() => {
+    const warehousesRef = ref(database, 'warehouses');
+    onValue(warehousesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const warehouseList = Object.entries(data).map(([key, value]) => ({
+          id: key,
+          ...(value as WarehouseData),
+        }));
+        setWarehouses(warehouseList);
+      }
+    });
+  }, []);
 
   // Effect to handle filtering and sorting whenever filter or sort changes
   useEffect(() => {
-    let filtered = [...data]; // Start with the original data
+    let filtered = [...warehouses];
 
     // Apply the filter based on the selected "Filter By" option
-    if (filterBy === 'owner') {
-      filtered = filtered.sort((a, b) => a.owner.localeCompare(b.owner)); // Alphabetical sort by owner name
+    if (filterBy === 'darkStoreName') {
+      filtered = filtered.sort((a, b) => a.darkStoreName.localeCompare(b.darkStoreName));
     }
 
     // Apply sorting based on the "Sort By" option
@@ -42,18 +65,18 @@ const Settings = (props: Props) => {
       if (filterBy === 'warehouseSize') {
         filtered = filtered.sort((a, b) =>
           isAscending
-            ? parseWarehouseSize(a.warehouseSize) - parseWarehouseSize(b.warehouseSize)
-            : parseWarehouseSize(b.warehouseSize) - parseWarehouseSize(a.warehouseSize)
+            ? parseInt(a.warehouseSize) - parseInt(b.warehouseSize)
+            : parseInt(b.warehouseSize) - parseInt(a.warehouseSize)
         );
-      } else if (filterBy === 'pincode') {
+      } else if (filterBy === 'warehouseAddress') {
         filtered = filtered.sort((a, b) =>
-          isAscending ? a.pincode.localeCompare(b.pincode) : b.pincode.localeCompare(a.pincode)
+          isAscending ? a.warehouseAddress.localeCompare(b.warehouseAddress) : b.warehouseAddress.localeCompare(a.warehouseAddress)
         );
       }
     }
 
     // Update the filtered data
-    setFilteredData(filtered);
+    setWarehouses(filtered);
   }, [filterBy, sortBy]);
 
   return (
@@ -73,9 +96,9 @@ const Settings = (props: Props) => {
             className="border rounded p-2"
           >
             <option value="">Select a filter</option>
-            <option value="owner">Owner Data (Alphabetical)</option>
+            <option value="darkStoreName">Dark Store Name (Alphabetical)</option>
             <option value="warehouseSize">Warehouse Size</option>
-            <option value="pincode">Pincode</option>
+            <option value="warehouseAddress">Warehouse Address</option>
           </select>
         </div>
         <div className="flex flex-col">
@@ -98,23 +121,43 @@ const Settings = (props: Props) => {
         <table className="min-w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-800">
-              <th className="border border-gray-300 p-2">Owner Data</th>
+              <th className="border border-gray-300 p-2">Dark Store Name</th>
               <th className="border border-gray-300 p-2">Warehouse Size</th>
-              <th className="border border-gray-300 p-2">Pincode</th>
-              <th className="border border-gray-300 p-2">Area Name</th>
-              <th className="border border-gray-300 p-2">Zone Score</th>
-              <th className="border border-gray-300 p-2">Status</th>
+              <th className="border border-gray-300 p-2">Ceiling Height</th>
+              <th className="border border-gray-300 p-2">Warehouse Address</th>
+              <th className="border border-gray-300 p-2">Storage Capacity</th>
+              <th className="border border-gray-300 p-2">Loading Dock</th>
+              <th className="border border-gray-300 p-2">Power Backup</th>
+              <th className="border border-gray-300 p-2">Temperature Control</th>
+              <th className="border border-gray-300 p-2">Security Features</th>
+              <th className="border border-gray-300 p-2">Operational Hours</th>
+              <th className="border border-gray-300 p-2">Accessibility</th>
+              <th className="border border-gray-300 p-2">Available Facilities</th>
+              <th className="border border-gray-300 p-2">Insurance Coverage</th>
+              <th className="border border-gray-300 p-2">Fire Safety Compliance</th>
+              <th className="border border-gray-300 p-2">Year of Establishment</th>
+              <th className="border border-gray-300 p-2">Certifications</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((warehouse, index) => (
-              <tr key={index}>
-                <td className="border border-gray-300 p-2">{warehouse.owner}</td>
+            {warehouses.map((warehouse) => (
+              <tr key={warehouse.id}>
+                <td className="border border-gray-300 p-2">{warehouse.darkStoreName}</td>
                 <td className="border border-gray-300 p-2">{warehouse.warehouseSize}</td>
-                <td className="border border-gray-300 p-2">{warehouse.pincode}</td>
-                <td className="border border-gray-300 p-2">{warehouse.areaName}</td>
-                <td className="border border-gray-300 p-2">{warehouse.zoneScore}</td>
-                <td className="border border-gray-300 p-2">{warehouse.status}</td>
+                <td className="border border-gray-300 p-2">{warehouse.ceilingHeight}</td>
+                <td className="border border-gray-300 p-2">{warehouse.warehouseAddress}</td>
+                <td className="border border-gray-300 p-2">{warehouse.storageCapacity}</td>
+                <td className="border border-gray-300 p-2">{warehouse.loadingDock ? 'Yes' : 'No'}</td>
+                <td className="border border-gray-300 p-2">{warehouse.powerBackup ? 'Yes' : 'No'}</td>
+                <td className="border border-gray-300 p-2">{warehouse.temperatureControl}</td>
+                <td className="border border-gray-300 p-2">{warehouse.securityFeatures}</td>
+                <td className="border border-gray-300 p-2">{warehouse.operationalHours}</td>
+                <td className="border border-gray-300 p-2">{warehouse.accessibility}</td>
+                <td className="border border-gray-300 p-2">{warehouse.availableFacilities}</td>
+                <td className="border border-gray-300 p-2">{warehouse.insuranceCoverage ? 'Yes' : 'No'}</td>
+                <td className="border border-gray-300 p-2">{warehouse.fireSafetyCompliance}</td>
+                <td className="border border-gray-300 p-2">{warehouse.yearOfEstablishment}</td>
+                <td className="border border-gray-300 p-2">{warehouse.certifications}</td>
               </tr>
             ))}
           </tbody>
