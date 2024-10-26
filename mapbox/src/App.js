@@ -1,16 +1,14 @@
 import React from 'react';
 import './App.css';
 import MapboxExample from './MapboxExample';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const App = () => {
   return (
-    <div className="container">
-      {/* Left section with MapboxExample */}
-      <div className="left-section">
+    <div className="container" style={{ height: '100vh' }}>
+      <div className="left-section" style={{ height: '100%' }}>
         <MapboxExample />
       </div>
-
-      {/* Right section with placeholder content */}
       <div className="right-section">
         <div className="top">
           <div className="dropdown">
@@ -21,7 +19,6 @@ const App = () => {
               <option value="pop_density">Population Density</option>
             </select>
           </div>
-          
         </div>
         <div className="bottom">
           Bottom stuff
