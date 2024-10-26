@@ -60,12 +60,13 @@ const MyWarehousesComponent = () => {
 
   const handleWarehouseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     const newWarehouse = {
       ...warehouseDetails,
       id: warehouses.length + 1,
+      isActive: false, // Add the isActive field, set to false by default
     };
-
+  
     // Save the new warehouse to Firebase Realtime Database
     const warehouseRef = ref(database, 'warehouses'); // Create a reference to the 'warehouses' node in the DB
     push(warehouseRef, newWarehouse) // Push the new warehouse to Firebase
