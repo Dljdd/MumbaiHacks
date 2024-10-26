@@ -123,15 +123,15 @@ const MapboxExample = ({ heatmapType }) => {
     map.on('click', async (e) => {
       const coordinates = e.lngLat;
       console.log(`Clicked coordinates: ${coordinates.lng}, ${coordinates.lat}`);
-
+    
       if (markerRef.current) {
         markerRef.current.remove();
       }
-
+    
       markerRef.current = new mapboxgl.Marker({ color: 'red' })
         .setLngLat(coordinates)
         .addTo(map);
-
+    
       try {
         const response = await fetch('http://localhost:3001/api/coordinates', {
           method: 'POST',
@@ -143,11 +143,11 @@ const MapboxExample = ({ heatmapType }) => {
             longitude: coordinates.lng,
           }),
         });
-
+    
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-
+    
         const data = await response.json();
         console.log('API response:', data);
         // Handle the API response here (e.g., update state, display information)

@@ -1,20 +1,23 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
-const port = 3001; // Use a different port than your React app
+const port = 3001;
 
-app.use(bodyParser.json());
+app.use(cors());
+
+app.use(express.json());
 
 app.post('/api/coordinates', (req, res) => {
   const { latitude, longitude } = req.body;
   console.log(`Received coordinates: ${latitude}, ${longitude}`);
-  
-  // Here you would typically process the coordinates and return a response
-  // For now, we'll just echo back the coordinates
-  res.json({ message: 'Coordinates received', latitude, longitude });
+
+  // Handle the coordinates here (e.g., store them in a database, send them to a service, etc.)
+  // For this example, we'll just log them to the console
+  console.log('API response:', { latitude, longitude });
+
+  res.status(201).send({ message: 'Coordinates received successfully' });
 });
 
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+  console.log(`Server listening on port ${port}`);
 });
-
