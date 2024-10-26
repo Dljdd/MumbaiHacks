@@ -3,70 +3,72 @@ import mapboxgl from '!mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MapboxExample = () => {
-  const mapContainerRef = useRef();
+  const mapContainerRef = useRef(null);
 
   useEffect(() => {
-    // Set the Mapbox access token
+    console.log('MapboxExample useEffect started');
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2FhZDEwMjMiLCJhIjoiY20yb3YxaGN4MGwwazJqczNwYTBlNzgwNyJ9.mvTybZ2s3abpNYVbQiUbpg';
 
-    // Initialize the map
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v11', // Map style
-      center: [72.8777, 19.0760], // Mumbai coordinates
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [72.8777, 19.0760],
       zoom: 10
     });
 
     map.on('load', () => {
-      // Load GeoJSON data
-      fetch('/dark_stores.geojson')
-        .then(response => response.json())
+      console.log('Map loaded');
+      fetch('/DS2.geojson')
+        .then(response => {
+          console.log('GeoJSON response:', response);
+          return response.json();
+        })
         .then(data => {
           console.log('GeoJSON data:', data);
-          map.addSource('dark-stores', {
-            type: 'geojson',
-            data: data
-          });
+          
+          // Add custom markers
+          data.features.forEach((feature) => {
+            const { geometry, properties } = feature;
+            const { coordinates } = geometry;
 
-          // Add markers
-          map.addLayer({
-            id: 'dark-stores-markers',
-            type: 'circle',
-            source: 'dark-stores',
-            paint: {
-              'circle-radius': 6,
-              'circle-color': '#B42222'
-            }
-          });
+            // Create a DOM element for the marker
+            const el = document.createElement('div');
+            el.className = 'marker';
+            
+            // Create an image element
+            const img = document.createElement('img');
+            img.src = '/onlyLogo-removebg-preview.png';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            
+            // Add error handling for image loading
+            img.onerror = () => {
+              console.error('Failed to load marker image');
+              el.style.backgroundColor = 'red'; // Fallback color
+            };
+            
+            el.appendChild(img);
 
-          // Optional: Add popups
-          map.on('click', 'dark-stores-markers', (e) => {
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const region = e.features[0].properties.region;
+            // Create the popup
+            const popup = new mapboxgl.Popup({ offset: 25 })
+              .setHTML(`<h3>${properties.region}</h3>`);
 
-            new mapboxgl.Popup()
+            // Create the marker
+            new mapboxgl.Marker(el)
               .setLngLat(coordinates)
-              .setHTML(`<h3>${region}</h3>`)
+              .setPopup(popup)
               .addTo(map);
-          });
 
-          // Change cursor to pointer when hovering over a marker
-          map.on('mouseenter', 'dark-stores-markers', () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-
-          map.on('mouseleave', 'dark-stores-markers', () => {
-            map.getCanvas().style.cursor = '';
+            console.log(`Marker added for ${properties.region}`);
           });
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
     });
 
-    // Cleanup on unmount
     return () => map.remove();
   }, []);
 
-  return <div ref={mapContainerRef} style={{ width: '100%', height: '400px' }} />;
+  return <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />;
 };
 
 export default MapboxExample;
