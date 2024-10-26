@@ -6,40 +6,19 @@ import { MenuIcon } from 'lucide-react'
 import { useUser } from '@auth0/nextjs-auth0/client'
 
 const Navbar = () => {
-  const {user} = useUser();
+  const { user } = useUser();
 
   return (
-    <header className="fixed right-0 left-0 top-0 py-4 px-4 bg-black/40 backdrop-blur-lg z-[100] flex items-center border-b-[1px] border-neutral-900 justify-between">
-      <aside className="flex items-center gap-[2px]">
-        {/* <p className="text-3xl font-bold">Gue</p> */}
+    <header className="fixed right-0 left-0 top-0 py-4 px-4 bg-black/40 backdrop-blur-lg z-[100] flex items-center justify-between border-b-[1px] border-neutral-900">
+      <aside className="flex items-center gap-[2px] mx-auto">
         <Image
-          src="/logo1.jpeg"
+          src="/logo1.png"
           width={270}
           height={270}
           alt="saasify logo"
           className="shadow-sm"
         />
-        {/* <p className="text-3xl font-bold">tly</p> */}
       </aside>
-      <nav className="absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%] hidden md:block">
-        <ul className="flex items-center gap-4 list-none">
-          <li>
-            <Link href="#">Features</Link>
-          </li>
-          <li>
-            <Link href="#">Solutions</Link>
-          </li>
-          <li>
-            <Link href="#">Pricing</Link>
-          </li>
-          <li>
-            <Link href="#">Resources</Link>
-          </li>
-          <li>
-            <Link href="#">Contact</Link>
-          </li>
-        </ul>
-      </nav>
       <aside className="flex items-center gap-4">
         {user ? (
           <Link
@@ -68,4 +47,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar
+export default Navbar;
