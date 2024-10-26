@@ -97,7 +97,7 @@ const MapboxExample = ({ heatmapType }) => {
             el.className = 'marker';
             
             const img = document.createElement('img');
-            img.src = '/zepto.png';
+            img.src = '/onlyLogo-removebg-preview.png';
             img.style.width = '100%';
             img.style.height = '100%';
             
