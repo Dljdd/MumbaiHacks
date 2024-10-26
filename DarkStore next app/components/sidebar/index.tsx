@@ -29,7 +29,7 @@ const MenuOptions = (props: Props) => {
           className="flex font-bold flex-row "
           href="/"
         >
-          DarkStore
+          .....
         </Link>
         <TooltipProvider>
           {menuOptions.map((menuItem) => (
