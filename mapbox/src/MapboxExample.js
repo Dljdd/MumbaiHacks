@@ -120,7 +120,7 @@ const MapboxExample = ({ heatmapType }) => {
         .catch(error => console.error('Error loading GeoJSON:', error));
     });
 
-    map.on('click', (e) => {
+    map.on('click', async (e) => {
       const coordinates = e.lngLat;
       console.log(`Clicked coordinates: ${coordinates.lng}, ${coordinates.lat}`);
 
@@ -131,6 +131,29 @@ const MapboxExample = ({ heatmapType }) => {
       markerRef.current = new mapboxgl.Marker({ color: 'red' })
         .setLngLat(coordinates)
         .addTo(map);
+
+      try {
+        const response = await fetch('http://localhost:3001/api/coordinates', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('API response:', data);
+        // Handle the API response here (e.g., update state, display information)
+      } catch (error) {
+        console.error('Error sending coordinates to API:', error);
+      }
     });
 
     return () => map.remove();
