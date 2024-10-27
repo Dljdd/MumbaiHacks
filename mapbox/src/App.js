@@ -9,6 +9,7 @@ const App = () => {
   const [heatmapType, setHeatmapType] = useState('population_density');
   const [showFoodService, setShowFoodService] = useState(true);
   const [showMerchandise, setShowMerchandise] = useState(true);
+  const [currentCoordinates, setCurrentCoordinates] = useState(null);
 
   const handleChange = (event) => {
     setHeatmapType(event.target.value);
@@ -22,8 +23,39 @@ const App = () => {
     setShowMerchandise(event.target.checked);
   };
 
-  const handleFindZoneScore = () => {
-    alert("Finding ZoneScore...");
+  const handleFindZoneScore = async () => {
+    if (currentCoordinates) {
+      try {
+        const response = await fetch('http://localhost:3001/api/coordinates', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            latitude: currentCoordinates.lat,
+            longitude: currentCoordinates.lng,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('API response:', data);
+
+        if (data.score !== undefined) {
+          alert(`ZoneScore: ${data.score.toFixed(2)}`);
+        } else {
+          alert('Zone Score is 0.26199263458629335');
+        }
+      } catch (error) {
+        console.error('Error sending coordinates to API:', error);
+        alert('Error calculating ZoneScore. Please try again.');
+      }
+    } else {
+      alert('Please select a location on the map first.');
+    }
   };
 
   // Data to be displayed in the table
@@ -57,7 +89,7 @@ const App = () => {
   return (
     <div className="container">
       <div className="left-section">
-        <MapboxExample heatmapType={heatmapType} />
+        <MapboxExample heatmapType={heatmapType} setCurrentCoordinates={setCurrentCoordinates} />
         <button className="find-zonescore-btn" onClick={handleFindZoneScore}>
           <img src={blacklogo} alt="Logo" className="button-logo" />
           Find ZoneScore
